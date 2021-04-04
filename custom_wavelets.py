@@ -6,6 +6,24 @@ import matplotlib.pyplot as plt
 class Wavelet:
     discritization:np.ndarray
     def __init__(self, name:str, maxScale:int):
+        """
+        
+        The Wavelet Class is simply an interface for the PyWavelet Wavelet class. 
+        This interface allows simplifications among our environment.
+        
+        Parameters
+        ----------
+        name : str
+            Name of the wavelet. The name must be the same as in the PyWavelet Library.
+        maxScale : int
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
+        
         self.name = name
         self.pywtWavelet = pywt.Wavelet(name)
         self.maxScale = maxScale
