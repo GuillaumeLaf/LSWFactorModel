@@ -1,2 +1,2 @@
 # LSW_FactorModel
-Implementation of the LSW Factor Model
+This repository contains the implementation of the Factor Model based on the LSW representation of a time serie.
