@@ -16,45 +16,88 @@ class Wavelet:
         name : str
             Name of the wavelet. The name must be the same as in the PyWavelet Library.
         maxScale : int
-            DESCRIPTION.
+            The maximum scale of the wavelet. Usually computed based on available amount of data.
 
-        Returns
-        -------
-        None.
 
         """
         
         self.name = name
         self.pywtWavelet = pywt.Wavelet(name)
         self.maxScale = maxScale
-        self.maxLength = self.getWaveletLength(self.maxScale+1)
+        self.maxLength = self.getWaveletLength(self.maxScale)    
+        # Maximum wavelet length. Note that the maximum length is twice the actual maximum length of the coarsest wavelet scale (to make sure the convolution with fft works)
+        
+        # High and Low Decomposition and Reconstruction filters (used to decompose a signal with a particular wavelet)
         self.dec_lo = np.array(self.pywtWavelet.dec_lo)
         self.dec_hi = np.array(self.pywtWavelet.dec_hi)
         self.rec_lo = np.array(self.pywtWavelet.rec_lo)
         self.rec_hi = np.array(self.pywtWavelet.rec_hi)
         
     def discretizeToMaxScale(self):
+        """
+        Function that allows to get a discretize version of the wavelet
+
+        Returns
+        -------
+        This function does not return anything. 
+        However it fills for each scale the array 'discritization' with the discritize wavelets.
+        The first dimension of the array is the scale from 1st scale to 'MaxScale'.
+        The second dimension is of size 'maxLength' and contains the discrete wavelet first padded in the 
+        end by zeros (as the discritized wavelet have differents lengths for different scales).
+
+        """
+        
         self.__initializeDiscritizationArrayIfNot()
         for i in range(self.maxScale):
             waveletLength = self.getWaveletLength(i)
             self.discritization[i, :waveletLength] = self.discretizeOneScale(i)
+            
+    def discretizeOneScale(self, scale:int):
+        """
         
+
+        Parameters
+        ----------
+        scale : int
+            The scale at which we want to have a discritized version of the wavelet.
+
+        Returns
+        -------
+        An array filled with a discrete wavelet without any padding
+
+        """
+        
+        mother = self.pywtWavelet.wavefun(level=scale+1)[1]/np.sqrt(2**(scale+1))
+        return np.trim_zeros(np.array(mother))
+    
+    def getWaveletLength(self, scale:int, cross_scale:int=0):
+        """
+        
+
+        Parameters
+        ----------
+        scale : int
+            Scale of the wavelet.
+        cross_scale : int, optional
+            cross Scale of the wavelet. The default is 0.
+
+        Returns
+        -------
+        The length of the wavelet at one particular scale and cross scale.
+
+        """
+        
+        filter_length = len(self.pywtWavelet.dec_lo)
+        return int((2**(scale+cross_scale+1) - 1)*(filter_length - 1) + 1)
+    
     def __initializeDiscritizationArrayIfNot(self):
         if not utils.isArrayInitialized(self, 'discritization'):
             self.discritization = np.zeros((self.maxScale, self.maxLength), dtype=np.float64)
     
-    def getWaveletLength(self, scale:int, cross_scale:int=0):
-        filter_length = len(self.pywtWavelet.dec_lo)
-        return int((2**(scale+cross_scale+1) - 1)*(filter_length - 1) + 1)
-        
-    def discretizeOneScale(self, scale:int):
-        mother = self.pywtWavelet.wavefun(level=scale+1)[1]/np.sqrt(2**(scale+1))
-        return np.trim_zeros(np.array(mother))
-    
 class CrossCorrelationWavelet(Wavelet):
     A_operator:np.ndarray
-    columnOrderIndexing:np.ndarray
-    phi_operator:np.ndarray
+    columnOrderIndexing:np.ndarray  # This array allows us to easily know where the CCWF of scale 'j' and order 'i' is in the 'phi_operator' array
+    phi_operator:np.ndarray     # Array which stacks the CCWF vertically based on scale and order
     def __init__(self, name:str, maxScale:int, order:int):
         super().__init__(name, maxScale)
         self.order = order
@@ -79,21 +122,53 @@ class CrossCorrelationWavelet(Wavelet):
         self.initializePhi_operator()
         self.A_operator = self.phi_operator.T @ self.phi_operator
         self.A_operator = self.__deleteExtraColumns(self.A_operator)
-        self.A_operator = np.linalg.inv(self.A_operator)
+        # self.A_operator = np.linalg.inv(self.A_operator)
         
-    def __deleteExtraColumns(self, matrix:np.ndarray):
+    def __deleteExtraColumns(self, A_op:np.ndarray):
+        """
+        Since 'negative orders are mirror of positive orders', this function deletes duplicate 
+        columns and rows of the A_operator based on the 'columnOrderIndexing' array
+        and update the 'columnOrderIndexing' array based on the deleted columns and rows, in order to
+        always be consistent with how scales and orders are stored in the 'A_operator' array.
+        
+        Parameters
+        ----------
+        A_op : np.ndarray
+            A_operator on which we want to delete duplicate columns and rows.
+
+        Returns
+        -------
+        A_op : TYPE
+            A_operator with deleted columns and rows.
+
+        """
+        
         col_order = np.concatenate(self.columnOrderIndexing)
         del_idx = np.arange(len(col_order))
         del_idx = del_idx[col_order < 0]
-        matrix = np.delete(matrix, del_idx, axis=0)
-        matrix = np.delete(matrix, del_idx, axis=1)
+        A_op = np.delete(A_op, del_idx, axis=0)
+        A_op = np.delete(A_op, del_idx, axis=1)
         
+        # Update the 'columnOrderIndexing' array based on the deletion.
         for j in range(self.columnOrderIndexing.shape[0]):
             self.columnOrderIndexing[j] = self.columnOrderIndexing[j][self.columnOrderIndexing[j] >= 0]
-        return matrix
+        return A_op
     
     def initializePhi_operator(self):
+        """
+        Initialize the phi operator required to get the correction matrix 'A'.
+        This operator is basically an array of all the Cross Correlation Wavelet Functions stacked vertically.
+        Taking the inner product of that operator with itself gives a Gramian matrix.
+
+        Returns
+        -------
+        This function does not return anything.
+
+        """
+        
         self.phi_operator = np.empty((self.maxLength, ), dtype=np.float64)
+        
+        # See the docstring of the function '__stackCCWFatScale' to understand the importance of this list.
         col_order_j = []
         for j in range(self.maxScale):
             col_order_i = []
@@ -101,17 +176,43 @@ class CrossCorrelationWavelet(Wavelet):
             col_order_j.append(np.array(col_order_i))
             
         self.phi_operator = np.delete(self.phi_operator, 0, axis=1)
+        
+        # Save the 'col_order_j' list permanently in the object.
+        # However, it will later be modified when erasing some duplicate columns of the Gramian Matrix.
         self.columnOrderIndexing = np.array(col_order_j)
     
     def __stackCCWFatScale(self, j:int, col_order:list):
+        """
+        Stack the Cross Correlation Wavelet Function of a particular scale 'j' vertically in an array 'phi_operator' for the order of the CCWF.
+
+        Parameters
+        ----------
+        j : int
+            scale of the CCWF to be stacked.
+        col_order : list
+            List that saves the way the CCWF are stacked. This list contains the 'order' of the CCWF associated with the scale 'j'.
+            ex : col_order = [-2, -1, 0, 1, 2]
+
+        Returns
+        -------
+        This function does not return anything.
+        However it modifies the list 'col_order'. The list is passed by reference, not by value.
+
+        """
+        
+        # Maximum and minimum order following Daniel Koch's notation
         mn = np.max([-self.maxScale+j+1, -self.order+1])
         mx = np.min([self.maxScale-j-1, self.order-1]) + 1
         for i in range(mn, mx):
             col_order.append(i)
+            
+            # The sign of the order is importance since the CCWF are not symmetric. 
+            # The CCWF with a negative order is the mirror around the y-axis of the positive order (for a given scale 'j')
+            # Eventhough the 'negative is the mirror of the positive', the arrays are not mirror of each other.
             if i >= 0:
                 self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j+i], self.discritization[j])))
             else:
                 self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j], self.discritization[j-i])))
             
     
-w = CrossCorrelationWavelet('db1', 3, 3)
+w = CrossCorrelationWavelet('db1', 2, 2)
