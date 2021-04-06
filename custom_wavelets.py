@@ -105,12 +105,35 @@ class CrossCorrelationWavelet(Wavelet):
         self.initializeA_operator()
         
     def getA_operatorAtOrder(self, i:int, r:int, trimmed:bool):
+        """
+        This function returns the inverse of the operator 'A' for a given two given 'orders' -i.e. "i" and "r".
+        This function uses the 'columnOrderIndexing' list to extract the wanted orders from the array 'A_operator'.
+        
+        Parameters
+        ----------
+        i : int
+            first order.
+        r : int
+            second order.
+        trimmed : bool
+            If true, this function returns a square matrix of dimension 'maxScale' 
+            filled with the operator 'A' and zeros where it is needed.
+
+        Returns
+        -------
+        out : TYPE
+            Either a square matrix if the 'trimmed' option is true.
+            Otherwise, it returns the operator 'A' for two given 'orders' -i.e. "i" and "r".
+
+        """
+        
         idx_i_mask = (np.concatenate(self.columnOrderIndexing) == i)
         idx_r_mask = (np.concatenate(self.columnOrderIndexing) == r)
         
         operator_mask = np.outer(idx_i_mask, idx_r_mask)
         shape_i = self.maxScale - np.abs(i)
         shape_r = self.maxScale - np.abs(r)
+        
         if not trimmed:
             out = np.zeros((self.maxScale, self.maxScale), dtype=np.float64)
             out[:shape_i, :shape_r] = self.A_operator[operator_mask].reshape(shape_i, shape_r)
@@ -119,10 +142,22 @@ class CrossCorrelationWavelet(Wavelet):
         return out
         
     def initializeA_operator(self):
+        """
+        Initialize the A operator used in the correction of the Evolutionary Wavelet Spectrum
+        This function compute the Gramian Matrix of the phi_operator.
+        Then it deletes the extra columns and rows of the operator 'A'.
+        Finally it inverts the operator 'A' as required for the correction.
+
+        Returns
+        -------
+        None.
+
+        """
+        
         self.initializePhi_operator()
         self.A_operator = self.phi_operator.T @ self.phi_operator
         self.A_operator = self.__deleteExtraColumns(self.A_operator)
-        # self.A_operator = np.linalg.inv(self.A_operator)
+        self.A_operator = np.linalg.inv(self.A_operator)
         
     def __deleteExtraColumns(self, A_op:np.ndarray):
         """
