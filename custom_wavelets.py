@@ -116,13 +116,13 @@ class CrossCorrelationWavelet(Wavelet):
         r : int
             second order.
         trimmed : bool
-            If true, this function returns a square matrix of dimension 'maxScale' 
+            If False, this function returns a square matrix of dimension 'maxScale' 
             filled with the operator 'A' and zeros where it is needed.
 
         Returns
         -------
         out : TYPE
-            Either a square matrix if the 'trimmed' option is true.
+            Either a square matrix if the 'trimmed' option is False.
             Otherwise, it returns the operator 'A' for two given 'orders' -i.e. "i" and "r".
 
         """
@@ -156,7 +156,7 @@ class CrossCorrelationWavelet(Wavelet):
         
         self.initializePhi_operator()
         self.A_operator = self.phi_operator.T @ self.phi_operator
-        self.A_operator = self.__deleteExtraColumns(self.A_operator)
+        # self.A_operator = self.__deleteExtraColumns(self.A_operator)
         self.A_operator = np.linalg.inv(self.A_operator)
         
     def __deleteExtraColumns(self, A_op:np.ndarray):
@@ -210,7 +210,7 @@ class CrossCorrelationWavelet(Wavelet):
             self.__stackCCWFatScale(j, col_order_i)
             col_order_j.append(np.array(col_order_i))
             
-        self.phi_operator = np.delete(self.phi_operator, 0, axis=1)
+        self.phi_operator = np.delete(self.phi_operator, 0, axis=1)     # Delete the first columns since it was only usefull to get the first stack
         
         # Save the 'col_order_j' list permanently in the object.
         # However, it will later be modified when erasing some duplicate columns of the Gramian Matrix.

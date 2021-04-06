@@ -24,6 +24,21 @@ class EWS:
         self.__getSpectrum()
         
     def updateDecomposition(self, decomposition:np.ndarray):
+        """
+        This function is usefull if we want to iterate over different decomposition without reinitializing the objects.
+        I essentially use this function when checking for convergence of the EWS.
+
+        Parameters
+        ----------
+        decomposition : np.ndarray
+            New decomposition.
+
+        Returns
+        -------
+        None.
+
+        """
+        
         self.decomposition = decomposition
         self.__getSpectrum()        
         
@@ -40,24 +55,85 @@ class EWS:
             ax[j].set_ylabel(f'Scale -{j+1}')
             
     def correctSpectrum(self):
+        """
+        This function corrects the spectrum with the 'A_operator' computed in the 'custom_wavelet.py' module.
+
+        Returns
+        -------
+        None.
+
+        """
+        
         temp_spectrum = np.zeros_like(self.spectrum)
         idx_i = np.concatenate(self.columnOrderIndexing)
+        
+        # Iterate over all possible 'orders'. Note that the first element of the 'columnOrderIndexing' will always contains the maximum number of possible orders.
         for i in self.columnOrderIndexing[0]:
+            
+            # Select the indices of the flattened array 'columnOrderIndexing' where the order is "i".
             idx = np.arange(len(idx_i))[idx_i == i]
             temp_spectrum[idx, :] = self.__correctSpectrumOfOrder(i, idx)
         self.spectrum = temp_spectrum
         
     def __correctSpectrumOfOrder(self, i:int, idx:np.ndarray):
+        """
+        This function corrects the spectrum of a particular order -i.e. "i".
+
+        Parameters
+        ----------
+        i : int
+            Order of the spectrum.
+        idx : np.ndarray
+            Array of indices of the flattened array 'columnOrderIndexing' where the order is "i".
+
+        Returns
+        -------
+        correctedSpectrum : np.ndarray
+            The corrected spectum of order "i".
+
+        """
+        
         correctedSpectrum = np.zeros((len(idx), self.spectrum.shape[1]), dtype=np.float64)
         for r in set(np.concatenate(self.columnOrderIndexing)):
             correctedSpectrum += self.crossWavelet.getA_operatorAtOrder(i, r, trimmed=True) @ self.getSpectrumOfOrder(r)
         return correctedSpectrum
     
     def smoothSpectrum(self, smoother:smo.Smoother):
+        """
+        This function smooths the spectrum according to the specified smoother.
+
+        Parameters
+        ----------
+        smoother : smo.Smoother
+            smoother used to smooth the spectrum.
+
+        Returns
+        -------
+        None.
+
+        """
+        
         for i in range(self.spectrum.shape[0]):
             self.spectrum[i, :] = smoother.smooth(self.spectrum[i, :])
     
     def getSpectrumOfScaleAndOrder(self, j:int, i:int):
+        """
+        This function extracts the spectrum at a given scale "j" and order "i".
+
+        Parameters
+        ----------
+        j : int
+            Scale.
+        i : int
+            Order.
+
+        Returns
+        -------
+        np.ndarray
+            Spectrum of scale "j" and order "i".
+
+        """
+        
         orders = np.concatenate(self.columnOrderIndexing)
         mask = orders == i
         idx_mask = np.arange(orders.shape[0])
@@ -66,12 +142,41 @@ class EWS:
         return self.spectrum[idx_j]
     
     def getSpectrumOfOrder(self, i:int):
+        """
+        Extract the spectrum of order "i" given the flattened array 'columnOrderIndexing'.
+
+        Parameters
+        ----------
+        i : int
+            Order to be extracted.
+
+        Returns
+        -------
+        np.ndarray
+            Return the spectrum of the given order "i".
+
+        """
+        
         orders = np.concatenate(self.columnOrderIndexing)
         mask = orders == i
-        n_scales = np.where(mask, 1, 0).sum()
-        return self.spectrum[mask].reshape(n_scales, -1)
+        return self.spectrum[mask, :].reshape(-1, self.spectrum.shape[1])
         
     def __getSpectrum(self):
+        """
+        Function that initialize the spectrum given the decomposition.
+        If 'self.decomposition' is already a spectrum (as indicated by 'self.isSpectrum')
+        then we must that the square root of it.
+        
+        Note that the 'spectrum' array is of dimension (length of columnOrderIndexing, length of signal)
+        The 'spectrum' array is thus not necessarily in a logical order. 
+        We must once again use the 'columnOrderIndexing' to find the right scale and order.
+
+        Returns
+        -------
+        None.
+
+        """
+        
         self.__initializeSpectrumArrayIfNot()
         if self.isSpectrum:
             self.__getCrossSpectrum(np.sqrt(self.decomposition))
@@ -79,10 +184,28 @@ class EWS:
             self.__getCrossSpectrum(self.decomposition)
     
     def __getCrossSpectrum(self, decomp:np.ndarray):
+        """
+        Function that sets the spectrum given the decomposition given as parameter.
+        The spectrum is filled in accordance with the array 'columnOrderIndexing'.
+        
+        Note that even if negative orders are allowed they produce the same spectrum as positive orders, hence creating storing redundant information.
+        However, let the redundancy be, as to be more consistent with the spectrum of the CrossEWS class.
+
+        Parameters
+        ----------
+        decomp : np.ndarray
+            Decomposition used to create the spectrum.
+
+        Returns
+        -------
+        None.
+
+        """
+        
         counter = 0
         for idx_scale, scale in enumerate(self.columnOrderIndexing):
              for order in scale:
-                 self.spectrum[counter] = decomp[idx_scale, :] * decomp[idx_scale + np.abs(order), :]
+                 self.spectrum[counter, :] = decomp[idx_scale, :] * decomp[idx_scale + np.abs(order), :]
                  counter += 1
             
     # def __getIncrementsCorrelationScalingSpectrum(self):

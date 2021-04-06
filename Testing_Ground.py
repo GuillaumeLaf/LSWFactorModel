@@ -24,11 +24,11 @@ spect[3][284:] = (np.sin(5*np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[284:]
 # spect[2][:400] = (np.sin(np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[:400]
 # spect[1][284:] = (np.sin(5*np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[284:]
 
-n = 1
-order = 0
+n = 2500
+order = 2
 
 lsw1 = lsw.LSW(spect, 'db1', order=order)
-incrCorrRows = lsw1.getConstantIncrementsCorrelationRows(np.array([1.]))
+incrCorrRows = lsw1.getConstantIncrementsCorrelationRows(np.array([1., 0.9]))
 lsw1.addIncrementsCorrelationMatrix(incrCorrRows)
 avg_simulation = np.zeros_like(lsw1.evol_spectrum.spectrum)
 # smoother = smo.Kernel_smoother('Gaussian', 75)
@@ -36,7 +36,7 @@ smoother = smo.SWT_smoother(wav.Wavelet('db10', 6), 'soft')
 for i in tqdm(range(n)):
     
     lsw1.simulate()
-    lsw1.simulation = lsw1.simulation + 0.025
+    # lsw1.simulation = lsw1.simulation + 0.025
     
     decomp_simulation = dec.WaveletDecomposition(lsw1.simulation, lsw1.wavelet)
     if i == 0:
