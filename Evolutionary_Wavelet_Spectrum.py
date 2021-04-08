@@ -309,9 +309,9 @@ class CrossEWS:
         for idx_scale, scale in enumerate(self.columnOrderIndexing):
             for order in scale:
                 if order >= 0:
-                    self.spectrum[u, v, counter] = decomp[u, idx_scale, :] * decomp[v, idx_scale + np.abs(order), :]
+                    self.spectrum[u, v, counter] = decomp[u, idx_scale, :] * decomp[v, idx_scale + order, :]
                 else:
-                    self.spectrum[u, v, counter] = decomp[v, idx_scale, :] * decomp[u, idx_scale + np.abs(order), :]
+                    self.spectrum[u, v, counter] = decomp[u, idx_scale, :] * decomp[v, idx_scale + order, :]
                 counter += 1
 
     def __initializeSpectrumArrayIfNot(self):
