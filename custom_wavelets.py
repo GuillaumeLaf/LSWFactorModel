@@ -24,7 +24,7 @@ class Wavelet:
         self.name = name
         self.pywtWavelet = pywt.Wavelet(name)
         self.maxScale = maxScale
-        self.maxLength = self.getWaveletLength(self.maxScale)    
+        self.maxLength = self.getWaveletLength(self.maxScale + 1)    
         # Maximum wavelet length. Note that the maximum length is twice the actual maximum length of the coarsest wavelet scale (to make sure the convolution with fft works)
         
         # High and Low Decomposition and Reconstruction filters (used to decompose a signal with a particular wavelet)
@@ -236,18 +236,35 @@ class CrossCorrelationWavelet(Wavelet):
         """
         
         # Maximum and minimum order following Daniel Koch's notation
-        mn = np.max([-self.maxScale+j+1, -self.order+1])
-        mx = np.min([self.maxScale-j-1, self.order-1]) + 1
+        mx = np.min([self.maxScale-j, self.order+1])
+        mn = np.max([-j, -self.order])
         for i in range(mn, mx):
             col_order.append(i)
             
             # The sign of the order is importance since the CCWF are not symmetric. 
             # The CCWF with a negative order is the mirror around the y-axis of the positive order (for a given scale 'j')
             # Eventhough the 'negative is the mirror of the positive', the arrays are not mirror of each other.
-            if i >= 0:
-                self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j+i], self.discritization[j])))
-            else:
-                self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j], self.discritization[j-i])))
+            # if i >= 0:
+            self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j+i], self.discritization[j])))
+            # else:
+            #     self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j], self.discritization[j-i])))
             
     
-w = CrossCorrelationWavelet('db1', 2, 2)
+w = CrossCorrelationWavelet('db1', 2, 0)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

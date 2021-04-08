@@ -24,8 +24,8 @@ spect[3][284:] = (np.sin(5*np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[284:]
 # spect[2][:400] = (np.sin(np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[:400]
 # spect[1][284:] = (np.sin(5*np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[284:]
 
-n = 2500
-order = 2
+n = 1
+order = 1
 
 lsw1 = lsw.LSW(spect, 'db1', order=order)
 incrCorrRows = lsw1.getConstantIncrementsCorrelationRows(np.array([1., 0.9]))
