@@ -139,6 +139,10 @@ class CrossCorrelationWavelet(Wavelet):
             out[:shape_i, :shape_r] = self.A_operator[operator_mask].reshape(shape_i, shape_r)
         else:
             out = self.A_operator[operator_mask].reshape(shape_i, shape_r)
+            
+        if i < 0 or r < 0:
+            out = np.flip(out, axis=0)
+            out = np.flip(out, axis=1)
         return out
         
     def initializeA_operator(self):
@@ -159,35 +163,35 @@ class CrossCorrelationWavelet(Wavelet):
         # self.A_operator = self.__deleteExtraColumns(self.A_operator)
         self.A_operator = np.linalg.inv(self.A_operator)
         
-    def __deleteExtraColumns(self, A_op:np.ndarray):
-        """
-        Since 'negative orders are mirror of positive orders', this function deletes duplicate 
-        columns and rows of the A_operator based on the 'columnOrderIndexing' array
-        and update the 'columnOrderIndexing' array based on the deleted columns and rows, in order to
-        always be consistent with how scales and orders are stored in the 'A_operator' array.
+    # def __deleteExtraColumns(self, A_op:np.ndarray):
+    #     """
+    #     Since 'negative orders are mirror of positive orders', this function deletes duplicate 
+    #     columns and rows of the A_operator based on the 'columnOrderIndexing' array
+    #     and update the 'columnOrderIndexing' array based on the deleted columns and rows, in order to
+    #     always be consistent with how scales and orders are stored in the 'A_operator' array.
         
-        Parameters
-        ----------
-        A_op : np.ndarray
-            A_operator on which we want to delete duplicate columns and rows.
+    #     Parameters
+    #     ----------
+    #     A_op : np.ndarray
+    #         A_operator on which we want to delete duplicate columns and rows.
 
-        Returns
-        -------
-        A_op : TYPE
-            A_operator with deleted columns and rows.
+    #     Returns
+    #     -------
+    #     A_op : TYPE
+    #         A_operator with deleted columns and rows.
 
-        """
+    #     """
         
-        col_order = np.concatenate(self.columnOrderIndexing)
-        del_idx = np.arange(len(col_order))
-        del_idx = del_idx[col_order < 0]
-        A_op = np.delete(A_op, del_idx, axis=0)
-        A_op = np.delete(A_op, del_idx, axis=1)
+    #     col_order = np.concatenate(self.columnOrderIndexing)
+    #     del_idx = np.arange(len(col_order))
+    #     del_idx = del_idx[col_order < 0]
+    #     A_op = np.delete(A_op, del_idx, axis=0)
+    #     A_op = np.delete(A_op, del_idx, axis=1)
         
-        # Update the 'columnOrderIndexing' array based on the deletion.
-        for j in range(self.columnOrderIndexing.shape[0]):
-            self.columnOrderIndexing[j] = self.columnOrderIndexing[j][self.columnOrderIndexing[j] >= 0]
-        return A_op
+    #     # Update the 'columnOrderIndexing' array based on the deletion.
+    #     for j in range(self.columnOrderIndexing.shape[0]):
+    #         self.columnOrderIndexing[j] = self.columnOrderIndexing[j][self.columnOrderIndexing[j] >= 0]
+    #     return A_op
     
     def initializePhi_operator(self):
         """
@@ -250,7 +254,7 @@ class CrossCorrelationWavelet(Wavelet):
             #     self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j], self.discritization[j-i])))
             
     
-w = CrossCorrelationWavelet('db1', 2, 0)
+w = CrossCorrelationWavelet('db1', 3, 3)
 
 
 

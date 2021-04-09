@@ -17,7 +17,7 @@ class EWS:
     def __init__(self, decomposition:np.ndarray, isSpectrum:bool, order:int, wavelet:w.Wavelet):
         self.decomposition = decomposition
         self.isSpectrum = isSpectrum
-        self.order = order + 1
+        self.order = order
         self.crossWavelet = w.CrossCorrelationWavelet(wavelet.name, wavelet.maxScale, self.order)
         self.columnOrderIndexing = self.crossWavelet.columnOrderIndexing
         
@@ -67,8 +67,8 @@ class EWS:
         temp_spectrum = np.zeros_like(self.spectrum)
         idx_i = np.concatenate(self.columnOrderIndexing)
         
-        # Iterate over all possible 'orders'. Note that the first element of the 'columnOrderIndexing' will always contains the maximum number of possible orders.
-        for i in self.columnOrderIndexing[0]:
+        # Iterate over all possible/unique 'orders'. 
+        for i in set(idx_i):
             
             # Select the indices of the flattened array 'columnOrderIndexing' where the order is "i".
             idx = np.arange(len(idx_i))[idx_i == i]
@@ -205,7 +205,7 @@ class EWS:
         counter = 0
         for idx_scale, scale in enumerate(self.columnOrderIndexing):
              for order in scale:
-                 self.spectrum[counter, :] = decomp[idx_scale, :] * decomp[idx_scale + np.abs(order), :]
+                 self.spectrum[counter, :] = decomp[idx_scale, :] * decomp[idx_scale + order, :]
                  counter += 1
             
     # def __getIncrementsCorrelationScalingSpectrum(self):
