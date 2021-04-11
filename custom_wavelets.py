@@ -140,9 +140,9 @@ class CrossCorrelationWavelet(Wavelet):
         else:
             out = self.A_operator[operator_mask].reshape(shape_i, shape_r)
             
-        if i < 0 or r < 0:
-            out = np.flip(out, axis=0)
-            out = np.flip(out, axis=1)
+        # if i < 0 or r < 0:
+        #     out = np.flip(out, axis=0)
+        #     out = np.flip(out, axis=1)
         return out
         
     def initializeA_operator(self):
@@ -239,19 +239,20 @@ class CrossCorrelationWavelet(Wavelet):
 
         """
         
-        # Maximum and minimum order following Daniel Koch's notation
+        # Maximum and minimum order following Daniel Koch's notations
         mx = np.min([self.maxScale-j, self.order+1])
         mn = np.max([-j, -self.order])
         for i in range(mn, mx):
-            col_order.append(i)
-            
-            # The sign of the order is importance since the CCWF are not symmetric. 
-            # The CCWF with a negative order is the mirror around the y-axis of the positive order (for a given scale 'j')
-            # Eventhough the 'negative is the mirror of the positive', the arrays are not mirror of each other.
-            # if i >= 0:
-            self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j+i], self.discritization[j])))
-            # else:
-            #     self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j], self.discritization[j-i])))
+            if i >= 0:
+                col_order.append(i)
+                
+                # The sign of the order is importance since the CCWF are not symmetric. 
+                # The CCWF with a negative order is the mirror around the y-axis of the positive order (for a given scale 'j')
+                # Eventhough the 'negative is the mirror of the positive', the arrays are not mirror of each other.
+                # if i >= 0:
+                self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j], self.discritization[j+i])))
+                # else:
+                #     self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j], self.discritization[j-i])))
             
     
 w = CrossCorrelationWavelet('db1', 3, 3)
