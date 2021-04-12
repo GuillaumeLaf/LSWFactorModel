@@ -77,7 +77,7 @@ smoother = smo.SWT_smoother(wav.Wavelet('db10', 4), 'soft')
 
 np_data = np.flip(data.T.to_numpy(), axis=1)
 
-fm = fmodel.LSW_FactorModel(np_data, 'db1', order=0, n_factors=1)
+fm = fmodel.LSW_FactorModel(np_data, 'db1', order=2, n_factors=1)
 fm.smoothSpectrum(smoother)
 fm.getLoadings()
 fm.getCommonComp()

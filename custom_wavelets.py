@@ -139,10 +139,6 @@ class CrossCorrelationWavelet(Wavelet):
             out[:shape_i, :shape_r] = self.A_operator[operator_mask].reshape(shape_i, shape_r)
         else:
             out = self.A_operator[operator_mask].reshape(shape_i, shape_r)
-            
-        # if i < 0 or r < 0:
-        #     out = np.flip(out, axis=0)
-        #     out = np.flip(out, axis=1)
         return out
         
     def initializeA_operator(self):
@@ -214,7 +210,8 @@ class CrossCorrelationWavelet(Wavelet):
             self.__stackCCWFatScale(j, col_order_i)
             col_order_j.append(np.array(col_order_i))
             
-        self.phi_operator = np.delete(self.phi_operator, 0, axis=1)     # Delete the first columns since it was only usefull to get the first stack
+        # Delete the first columns since it was only usefull to get the first stack
+        self.phi_operator = np.delete(self.phi_operator, 0, axis=1)     
         
         # Save the 'col_order_j' list permanently in the object.
         # However, it will later be modified when erasing some duplicate columns of the Gramian Matrix.
@@ -255,7 +252,7 @@ class CrossCorrelationWavelet(Wavelet):
                 #     self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j], self.discritization[j-i])))
             
     
-w = CrossCorrelationWavelet('db1', 3, 3)
+w = CrossCorrelationWavelet('db1', 3, 1)
 
 
 

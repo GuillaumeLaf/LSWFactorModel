@@ -69,7 +69,6 @@ class EWS:
         
         # Iterate over all possible/unique 'orders'. 
         for i in set(idx_i):
-            
             # Select the indices of the flattened array 'columnOrderIndexing' where the order is "i".
             idx = np.arange(len(idx_i))[idx_i == i]
             temp_spectrum[idx, :] = self.__correctSpectrumOfOrder(i, idx)
@@ -92,7 +91,7 @@ class EWS:
             The corrected spectum of order "i".
 
         """
-        
+
         correctedSpectrum = np.zeros((len(idx), self.spectrum.shape[1]), dtype=np.float64)
         for r in set(np.concatenate(self.columnOrderIndexing)):
             correctedSpectrum += self.crossWavelet.getA_operatorAtOrder(i, r, trimmed=True) @ self.getSpectrumOfOrder(r)
