@@ -16,18 +16,18 @@ from timeit import timeit
 # spect[0][128:512] = 1.0
 # spect[0][768:] = (np.sin(2*np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[768:]
 # spect[2][:400] = (np.sin(np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[:400]
-# spect[1][284:] = (np.sin(5*np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[284:]
+# spect[3][284:] = (np.sin(5*np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[284:]
 # # spect[3][:589] = (np.sin(5*np.pi*np.linspace(0,1,l) - np.pi/3)**2 + 0.5)[:589]
 
-# n = 100
-# n_signals = 20
+# n = 1000
+# n_signals = 2
 # order = 0
 
 # lsw1 = lsw.LSW(spect, 'db1', order=order)
-# incrCorrRows = lsw1.getConstantIncrementsCorrelationRows(np.array([1., 0.5]))
+# incrCorrRows = lsw1.getConstantIncrementsCorrelationRows(np.array([1.]))
 # lsw1.addIncrementsCorrelationMatrix(incrCorrRows)
-# avg_simu = np.zeros((n_signals, n_signals, lsw1.maxScale, lsw1.order+1, lsw1.lengthSignal), dtype=np.float64)
-# smoother = smo.Kernel_smoother('Gaussian', 75)
+
+# # smoother = smo.Kernel_smoother('Gaussian', 75)
 # smoother = smo.SWT_smoother(wav.Wavelet('db10', 6), 'soft')
 
 # for i in tqdm(range(n)):
@@ -39,14 +39,14 @@ from timeit import timeit
 #     multi_decomp = np.array(multi_decomp)
     
 #     if i == 0:
-#         spect = ews.CrossEWS(multi_decomp, isSpectrum=False, order=order)
-#         spect.setWavelet(lsw1.wavelet)
+#         spect = ews.CrossEWS(multi_decomp, isSpectrum=False, order=order, wavelet=lsw1.wavelet)
+#         avg_simu = np.zeros_like(spect.spectrum, dtype=np.float64)
         
 #     spect.updateDecomposition(multi_decomp)
 #     spect.correctSpectrum()
 #     avg_simu += (spect.spectrum/n)
     
-# avg_ews = ews.CrossEWS(multi_decomp, isSpectrum=False, order=order)
+# avg_ews = ews.CrossEWS(multi_decomp, isSpectrum=False, order=order, wavelet=lsw1.wavelet)
 # avg_ews.spectrum = avg_simu
 # avg_ews.graph(u=0,v=0,order=0,sharey=True)
 
@@ -62,27 +62,33 @@ from timeit import timeit
 # fm.smoothSpectrum(smoother) 
 # fm.getLoadings()
 
+
+
+
+
+
+
 import pandas as pd
 
-data = pd.read_csv('euribor_data.csv', delimiter=';', index_col=[0], parse_dates=True)
+data = pd.read_csv('crypto_daily.csv', delimiter=';', index_col=[0], parse_dates=True)
 data = data.loc[data.index.dropna()]
 data = data.iloc[:, :-1]
 # data = data + 1
-# data = np.log1p(data.pct_change())
-# data = np.cumsum(data)
-data.dropna(inplace=True)
+data = np.log1p(data.pct_change())
+data = np.cumsum(data)
+# data.dropna(inplace=True)
 
-# smoother = smo.Kernel_smoother('Gaussian', 50)
-smoother = smo.SWT_smoother(wav.Wavelet('db10', 4), 'soft')
+# smoother = smo.Kernel_smoother('Gaussian', 250)
+smoother = smo.SWT_smoother(wav.Wavelet('db10', 6), 'soft')
 
 np_data = np.flip(data.T.to_numpy(), axis=1)
 
-fm = fmodel.LSW_FactorModel(np_data, 'db1', order=2, n_factors=1)
+fm = fmodel.LSW_FactorModel(np_data, 'db1', order=2, n_factors=2)
 fm.smoothSpectrum(smoother)
 fm.getLoadings()
 fm.getCommonComp()
 
-        
+
         
         
         

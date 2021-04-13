@@ -230,9 +230,30 @@ class CrossEWS:
     incrementsCorrelationMatrix:np.ndarray
     
     def __init__(self, decomposition:np.ndarray, isSpectrum:bool, order:int, wavelet:w.Wavelet):
+        """
+        This class is really a one to one correspondence with the EWS class. 
+        It is only adapted to the multivariate case of the LSW model.
+
+        Parameters
+        ----------
+        decomposition : np.ndarray
+            Wavelet Decomposition. Size of the array is : (n_signals, n_details, length_signals)
+        isSpectrum : bool
+            Flag if the decomposition array is already a spectrum. This is used when doing some simulations
+        order : int
+            Order of the LSW model.
+        wavelet : w.Wavelet
+            Wavelet used to decompose the signal. This is an instance of the Wavelet class
+
+        Returns
+        -------
+        None.
+
+        """
+        
         self.decomposition = decomposition      # (n_signals, n_details, lenght_signal)
         self.isSpectrum = isSpectrum
-        self.order = order + 1
+        self.order = order
         self.crossWavelet = w.CrossCorrelationWavelet(wavelet.name, wavelet.maxScale, self.order)
         self.columnOrderIndexing = self.crossWavelet.columnOrderIndexing
         
@@ -283,8 +304,7 @@ class CrossEWS:
     def getSpectrumOfOrder(self, u:int, v:int, i:int):
         orders = np.concatenate(self.columnOrderIndexing)
         mask = orders == i
-        n_scales = np.where(mask, 1, 0).sum()
-        return self.spectrum[u, v, mask].reshape(n_scales, -1)
+        return self.spectrum[u, v, mask].reshape(-1, self.spectrum.shape[3])
 
     def getSpectrumForAllSignalsAtTimeZ(self, j:int, i:int, z:int):
          orders = np.concatenate(self.columnOrderIndexing)
@@ -308,9 +328,9 @@ class CrossEWS:
         for idx_scale, scale in enumerate(self.columnOrderIndexing):
             for order in scale:
                 if order >= 0:
-                    self.spectrum[u, v, counter] = decomp[u, idx_scale, :] * decomp[v, idx_scale + np.abs(order), :]
+                    self.spectrum[u, v, counter] = decomp[u, idx_scale, :] * decomp[v, idx_scale + order, :]
                 else:
-                    self.spectrum[u, v, counter] = decomp[v, idx_scale, :] * decomp[u, idx_scale + np.abs(order), :]
+                    self.spectrum[u, v, counter] = decomp[v, idx_scale, :] * decomp[u, idx_scale + order, :]
                 counter += 1
 
     def __initializeSpectrumArrayIfNot(self):

@@ -64,12 +64,6 @@ class WaveletDecomposition:
             
             reconstruction = (convolutionApprox + convolutionDetail)/2.
         return reconstruction
-    
-    def rotateDecomposition(self):
-        for i in range(self.wavelet.maxScale-1, -1, -1):
-            if i == self.wavelet.maxScale-1:
-                self.approx = np.roll(self.approx, -(2**(i+2)))
-            self.details[i] = np.roll(self.details[i], -(2**(i+2)))
             
     def __getNormalizeConstant(self, norm:bool):
         if norm:
