@@ -272,12 +272,35 @@ class CrossEWS:
             ax[j].set_ylabel(f'Scale -{j+1}')
         
     def smoothSpectrum(self, smoother:smo.Smoother):
+        """
+        Smooth the spectrum with the provided Smoother 
+
+        Parameters
+        ----------
+        smoother : smo.Smoother
+            Smoother object.
+
+        Returns
+        -------
+        None.
+
+        """
+        
         for u in range(self.spectrum.shape[0]):
             for v in range(self.spectrum.shape[0]):
                 for i in range(self.spectrum.shape[2]):
                         self.spectrum[u, v, i, :] = smoother.smooth(self.spectrum[u, v, i, :])
                 
     def correctSpectrum(self):
+        """
+        Correct the spectrum at every scale and order.
+
+        Returns
+        -------
+        None.
+
+        """
+        
         for u in range(self.spectrum.shape[0]):
             for v in range(self.spectrum.shape[0]):
                 temp_spectrum = np.zeros_like(self.spectrum[u, v])
@@ -288,12 +311,53 @@ class CrossEWS:
                 self.spectrum[u, v] = temp_spectrum
         
     def __correctSpectrumOfOrder(self, u:int, v:int, i:int, idx:np.ndarray):
+        """
+        Correct the spectrum at a given order "i" and between two processes "u" and "v".
+
+        Parameters
+        ----------
+        u : int
+            First process.
+        v : int
+            Second process.
+        i : int
+            order that will be corrected.
+        idx : np.ndarray
+            Index array containing the location in the spectrum array of the EWS between "u" and "v" at order "i".
+
+        Returns
+        -------
+        correctedSpectrum : TYPE
+            Corrected EWS between "u" and "v" at order "i".
+
+        """
+        
         correctedSpectrum = np.zeros((len(idx), self.spectrum.shape[3]), dtype=np.float64)
         for r in set(np.concatenate(self.columnOrderIndexing)):
             correctedSpectrum += self.crossWavelet.getA_operatorAtOrder(i, r, trimmed=True) @ self.getSpectrumOfOrder(u, v, r)
         return correctedSpectrum
     
     def getSpectrumOfScaleAndOrder(self, u:int, v:int, j:int, i:int):
+        """
+        Function that returns the EWS between two processes "u" and "v" for a given scale "j" and order "i".
+
+        Parameters
+        ----------
+        u : int
+            First process.
+        v : int
+            Second process.
+        j : int
+            Scale.
+        i : int
+            Order.
+
+        Returns
+        -------
+        np.ndarray
+            Return the EWS.
+
+        """
         orders = np.concatenate(self.columnOrderIndexing)
         mask = orders == i
         idx_mask = np.arange(orders.shape[0])
@@ -302,16 +366,64 @@ class CrossEWS:
         return self.spectrum[u, v, idx_j]
     
     def getSpectrumOfOrder(self, u:int, v:int, i:int):
+        """
+        Function that returns the EWS between two processes "u" and "v" for a given order "i".
+
+        Parameters
+        ----------
+        u : int
+            First process.
+        v : int
+            Second process.
+        i : int
+            Order.
+
+        Returns
+        -------
+        np.ndarray
+            Return the EWS.
+
+        """
+        
         orders = np.concatenate(self.columnOrderIndexing)
         mask = orders == i
         return self.spectrum[u, v, mask].reshape(-1, self.spectrum.shape[3])
 
     def getSpectrumForAllSignalsAtTimeZ(self, j:int, i:int, z:int):
+        """
+        Function that allows us to recover the EWS for all processes at a given scale "j", order "i" and time "z".
+        This function is used when constructing the huge "S" stacked matrix (analogue to the covariance matrix).
+
+        Parameters
+        ----------
+        j : int
+            Scale.
+        i : int
+            Order.
+        z : int
+            Time.
+
+        Returns
+        -------
+        TYPE
+            EWS for all processes at a given scale "j", order "i" and time "z".
+
+        """
+        
          orders = np.concatenate(self.columnOrderIndexing)
          idx = np.arange(len(orders))[orders == i]
          return self.spectrum[:, :, idx[j], z]
     
     def __getSpectrum(self):
+        """
+        The series of function attached to this one are used to compute the EWS from the processes' decompositions.
+
+        Returns
+        -------
+        None.
+
+        """
+        
         self.__initializeSpectrumArrayIfNot()
         if self.isSpectrum:
             self.__getCrossSpectrum(np.sqrt(self.decomposition))
