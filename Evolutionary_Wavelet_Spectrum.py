@@ -410,10 +410,10 @@ class CrossEWS:
 
         """
         
-         orders = np.concatenate(self.columnOrderIndexing)
-         idx = np.arange(len(orders))[orders == i]
-         return self.spectrum[:, :, idx[j], z]
-    
+        orders = np.concatenate(self.columnOrderIndexing)
+        idx = np.arange(len(orders))[orders == i]
+        return self.spectrum[:, :, idx[j], z]
+
     def __getSpectrum(self):
         """
         The series of function attached to this one are used to compute the EWS from the processes' decompositions.

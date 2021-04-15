@@ -9,7 +9,7 @@ from tqdm import tqdm
 import cProfile as profile
 from timeit import timeit
 
-l = 1024
+l = 850
 mS = int(np.floor(np.log(l)/np.log(2)))
 spect = np.zeros((mS, l), dtype=np.float64)
 spect[0][256:589] = 1.0
