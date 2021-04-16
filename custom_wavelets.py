@@ -10,6 +10,7 @@ class Wavelet:
         
         The Wavelet Class is simply an interface for the PyWavelet Wavelet class. 
         This interface allows simplifications among our environment.
+        We could easily get rid of the dependence on the PyWavelet package by hard coding wavelet filters, ...
         
         Parameters
         ----------
@@ -24,7 +25,7 @@ class Wavelet:
         self.name = name
         self.pywtWavelet = pywt.Wavelet(name)
         self.maxScale = maxScale
-        self.maxLength = self.getWaveletLength(self.maxScale)    
+        self.maxLength = self.getWaveletLength(self.maxScale + 1)    
         # Maximum wavelet length. Note that the maximum length is twice the actual maximum length of the coarsest wavelet scale (to make sure the convolution with fft works)
         
         # High and Low Decomposition and Reconstruction filters (used to decompose a signal with a particular wavelet)
@@ -159,35 +160,35 @@ class CrossCorrelationWavelet(Wavelet):
         # self.A_operator = self.__deleteExtraColumns(self.A_operator)
         self.A_operator = np.linalg.inv(self.A_operator)
         
-    def __deleteExtraColumns(self, A_op:np.ndarray):
-        """
-        Since 'negative orders are mirror of positive orders', this function deletes duplicate 
-        columns and rows of the A_operator based on the 'columnOrderIndexing' array
-        and update the 'columnOrderIndexing' array based on the deleted columns and rows, in order to
-        always be consistent with how scales and orders are stored in the 'A_operator' array.
+    # def __deleteExtraColumns(self, A_op:np.ndarray):
+    #     """
+    #     Since 'negative orders are mirror of positive orders', this function deletes duplicate 
+    #     columns and rows of the A_operator based on the 'columnOrderIndexing' array
+    #     and update the 'columnOrderIndexing' array based on the deleted columns and rows, in order to
+    #     always be consistent with how scales and orders are stored in the 'A_operator' array.
         
-        Parameters
-        ----------
-        A_op : np.ndarray
-            A_operator on which we want to delete duplicate columns and rows.
+    #     Parameters
+    #     ----------
+    #     A_op : np.ndarray
+    #         A_operator on which we want to delete duplicate columns and rows.
 
-        Returns
-        -------
-        A_op : TYPE
-            A_operator with deleted columns and rows.
+    #     Returns
+    #     -------
+    #     A_op : TYPE
+    #         A_operator with deleted columns and rows.
 
-        """
+    #     """
         
-        col_order = np.concatenate(self.columnOrderIndexing)
-        del_idx = np.arange(len(col_order))
-        del_idx = del_idx[col_order < 0]
-        A_op = np.delete(A_op, del_idx, axis=0)
-        A_op = np.delete(A_op, del_idx, axis=1)
+    #     col_order = np.concatenate(self.columnOrderIndexing)
+    #     del_idx = np.arange(len(col_order))
+    #     del_idx = del_idx[col_order < 0]
+    #     A_op = np.delete(A_op, del_idx, axis=0)
+    #     A_op = np.delete(A_op, del_idx, axis=1)
         
-        # Update the 'columnOrderIndexing' array based on the deletion.
-        for j in range(self.columnOrderIndexing.shape[0]):
-            self.columnOrderIndexing[j] = self.columnOrderIndexing[j][self.columnOrderIndexing[j] >= 0]
-        return A_op
+    #     # Update the 'columnOrderIndexing' array based on the deletion.
+    #     for j in range(self.columnOrderIndexing.shape[0]):
+    #         self.columnOrderIndexing[j] = self.columnOrderIndexing[j][self.columnOrderIndexing[j] >= 0]
+    #     return A_op
     
     def initializePhi_operator(self):
         """
@@ -210,7 +211,8 @@ class CrossCorrelationWavelet(Wavelet):
             self.__stackCCWFatScale(j, col_order_i)
             col_order_j.append(np.array(col_order_i))
             
-        self.phi_operator = np.delete(self.phi_operator, 0, axis=1)     # Delete the first columns since it was only usefull to get the first stack
+        # Delete the first columns since it was only usefull to get the first stack
+        self.phi_operator = np.delete(self.phi_operator, 0, axis=1)     
         
         # Save the 'col_order_j' list permanently in the object.
         # However, it will later be modified when erasing some duplicate columns of the Gramian Matrix.
@@ -235,19 +237,37 @@ class CrossCorrelationWavelet(Wavelet):
 
         """
         
-        # Maximum and minimum order following Daniel Koch's notation
-        mn = np.max([-self.maxScale+j+1, -self.order+1])
-        mx = np.min([self.maxScale-j-1, self.order-1]) + 1
+        # Maximum and minimum order following Daniel Koch's notations
+        mx = np.min([self.maxScale-j, self.order+1])
+        mn = np.max([-j, -self.order])
         for i in range(mn, mx):
-            col_order.append(i)
-            
-            # The sign of the order is importance since the CCWF are not symmetric. 
-            # The CCWF with a negative order is the mirror around the y-axis of the positive order (for a given scale 'j')
-            # Eventhough the 'negative is the mirror of the positive', the arrays are not mirror of each other.
             if i >= 0:
-                self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j+i], self.discritization[j])))
-            else:
-                self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j], self.discritization[j-i])))
+                col_order.append(i)
+                
+                # The sign of the order is importance since the CCWF are not symmetric. 
+                # The CCWF with a negative order is the mirror around the y-axis of the positive order (for a given scale 'j')
+                # Eventhough the 'negative is the mirror of the positive', the arrays are not mirror of each other.
+                # if i >= 0:
+                self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j], self.discritization[j+i])))
+                # else:
+                #     self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j], self.discritization[j-i])))
             
     
-w = CrossCorrelationWavelet('db1', 2, 2)
+w = CrossCorrelationWavelet('db1', 3, 1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -116,15 +116,12 @@ class LSW:
     def __checkSignalLengthMatch(self, length:int):
         if length != self.lengthSignal:
             raise ValueError("Length of the array doesn't match length of signal")
-        
-# class MLSW:
-#     evol_spectrum:ews.CrossSpectrum
-#     def __init__(self, signals:np.ndarray, wavelet_name:str, order:int=0):
-#         self.signals = signals
-#         self.wavelet_name = wavelet_name
-#         self.order = order
-    
-    
+            
+"""
+    The following functions could have been placed inside their corresponding classes.
+    However, in order to speed up the computation using Numba, we have to extract them from the class environment.
+    The 'nb.njit' decorator allows to get speed of the function comparable to C.
+"""
     
 @nb.njit(nogil=True)
 def matchFirstRowLengthToMaxScale(FirstRow:np.ndarray, maxScale:int):

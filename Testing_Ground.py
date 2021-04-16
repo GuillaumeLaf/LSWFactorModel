@@ -9,7 +9,7 @@ from tqdm import tqdm
 import cProfile as profile
 from timeit import timeit
 
-l = 1024
+l = 850
 mS = int(np.floor(np.log(l)/np.log(2)))
 spect = np.zeros((mS, l), dtype=np.float64)
 spect[0][256:589] = 1.0
@@ -24,11 +24,11 @@ spect[3][284:] = (np.sin(5*np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[284:]
 # spect[2][:400] = (np.sin(np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[:400]
 # spect[1][284:] = (np.sin(5*np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[284:]
 
-n = 2500
-order = 2
+n = 100
+order = 1
 
 lsw1 = lsw.LSW(spect, 'db1', order=order)
-incrCorrRows = lsw1.getConstantIncrementsCorrelationRows(np.array([1., 0.9]))
+incrCorrRows = lsw1.getConstantIncrementsCorrelationRows(np.array([1., 0.7, 0.4]))
 lsw1.addIncrementsCorrelationMatrix(incrCorrRows)
 avg_simulation = np.zeros_like(lsw1.evol_spectrum.spectrum)
 # smoother = smo.Kernel_smoother('Gaussian', 75)
