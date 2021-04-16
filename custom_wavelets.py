@@ -10,6 +10,7 @@ class Wavelet:
         
         The Wavelet Class is simply an interface for the PyWavelet Wavelet class. 
         This interface allows simplifications among our environment.
+        We could easily get rid of the dependence on the PyWavelet package by hard coding wavelet filters, ...
         
         Parameters
         ----------
