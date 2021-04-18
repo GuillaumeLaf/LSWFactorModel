@@ -44,7 +44,7 @@ class EWS:
         
     def setIncrementsCorrelationMatrix(self, correlationMatrix:np.ndarray):
         self.incrementsCorrelationMatrix = correlationMatrix
-        # self.__scaleSpectrumIfSimulation()
+        self.__scaleSpectrumIfSimulation()
     
     def graph(self, order:int=0, sharey:bool=True):
         n_scales = np.where(np.concatenate(self.columnOrderIndexing) == order, 1, 0).sum()
@@ -207,23 +207,23 @@ class EWS:
                  self.spectrum[counter, :] = decomp[idx_scale, :] * decomp[idx_scale + order, :]
                  counter += 1
             
-    # def __getIncrementsCorrelationScalingSpectrum(self):
-    #     scalingSpectrum = np.zeros_like(self.spectrum)
-    #     for z in range(self.spectrum.shape[2]):
-    #         scalingSpectrum[:,:,z] = utils.getScalingSpectrumAtTimeZ(self.incrementsCorrelationMatrix[:,:,z])[:, :self.spectrum.shape[1]]
-    #     return scalingSpectrum
+    def __getIncrementsCorrelationScalingSpectrum(self):
+        scalingSpectrum = np.zeros_like(self.spectrum)
+        for z in range(self.spectrum.shape[1]):
+            scalingSpectrum[:,z] = utils.getScalingSpectrumAtTimeZ(self.incrementsCorrelationMatrix[:,:,z])[:, :self.spectrum.shape[1]]
+        return scalingSpectrum
     
-    # def __scaleSpectrumIfSimulation(self):
-    #     if self.__isSimulation():
-    #         scalingSpectrum = self.__getIncrementsCorrelationScalingSpectrum()
-    #         self.spectrum = np.multiply(self.spectrum, scalingSpectrum)       
+    def __scaleSpectrumIfSimulation(self):
+        if self.__isSimulation():
+            scalingSpectrum = self.__getIncrementsCorrelationScalingSpectrum()
+            self.spectrum = np.multiply(self.spectrum, scalingSpectrum)       
             
     def __initializeSpectrumArrayIfNot(self):
             if not utils.isArrayInitialized(self, 'spectrum'):
                 self.spectrum = np.zeros((np.concatenate(self.columnOrderIndexing).shape[0], self.decomposition.shape[1]), dtype=np.float64)
             
-    # def __isSimulation(self):
-    #     return utils.isArrayInitialized(self, 'incrementsCorrelationMatrix')    # If it a simulation then we need to have a correlation matrix. Allow us to differentiate between simulation and real decomposition of a signal
+    def __isSimulation(self):
+        return utils.isArrayInitialized(self, 'incrementsCorrelationMatrix')    # If it a simulation then we need to have a correlation matrix. Allow us to differentiate between simulation and real decomposition of a signal
         
 class CrossEWS:
     spectrum:np.ndarray     #The spectrum does not include the approx. level (only the details coefficients)

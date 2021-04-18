@@ -253,7 +253,7 @@ class CrossCorrelationWavelet(Wavelet):
                 #     self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j], self.discritization[j-i])))
             
     
-w = CrossCorrelationWavelet('db1', 3, 1)
+w = CrossCorrelationWavelet('db1', 3, 3)
 
 
 
