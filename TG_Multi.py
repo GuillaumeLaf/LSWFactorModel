@@ -68,25 +68,25 @@ from timeit import timeit
 
 
 
-import pandas as pd
+# import pandas as pd
 
-data = pd.read_csv('crypto_daily.csv', delimiter=';', index_col=[0], parse_dates=True)
-data = data.loc[data.index.dropna()]
-data = data.iloc[:, :-1]
-# data = data + 1
-data = np.log1p(data.pct_change())
-data = np.cumsum(data)
-# data.dropna(inplace=True)
+# data = pd.read_csv('crypto_daily.csv', delimiter=';', index_col=[0], parse_dates=True)
+# data = data.loc[data.index.dropna()]
+# data = data.iloc[:, :-1]
+# # data = data + 1
+# data = np.log1p(data.pct_change())
+# data = np.cumsum(data)
+# # data.dropna(inplace=True)
 
-# smoother = smo.Kernel_smoother('Gaussian', 250)
-smoother = smo.SWT_smoother(wav.Wavelet('db10', 6), 'soft')
+# # smoother = smo.Kernel_smoother('Gaussian', 250)
+# smoother = smo.SWT_smoother(wav.Wavelet('db10', 6), 'soft')
 
-np_data = np.flip(data.T.to_numpy(), axis=1)
+# np_data = np.flip(data.T.to_numpy(), axis=1)
 
-fm = fmodel.LSW_FactorModel(np_data, 'db1', order=2, n_factors=2)
-fm.smoothSpectrum(smoother)
-fm.getLoadings()
-fm.getCommonComp()
+# fm = fmodel.LSW_FactorModel(np_data, 'db1', order=2, n_factors=2)
+# fm.smoothSpectrum(smoother)
+# fm.getLoadings()
+# fm.getCommonComp()
 
 
         
