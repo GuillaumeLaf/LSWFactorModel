@@ -217,10 +217,7 @@ class CrossCorrelationWavelet(Wavelet):
                 # The sign of the order is importance since the CCWF are not symmetric. 
                 # The CCWF with a negative order is the mirror around the y-axis of the positive order (for a given scale 'j')
                 # Eventhough the 'negative is the mirror of the positive', the arrays are not mirror of each other.
-                # if i >= 0:
                 self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j], self.discritization[j+i])))
-                # else:
-                #     self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j], self.discritization[j-i])))
             
     
 w = CrossCorrelationWavelet('db1', 3, 3)

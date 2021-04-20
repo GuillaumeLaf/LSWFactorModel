@@ -35,7 +35,7 @@ class LSW_FactorModel:
             decomp.append(dec.WaveletDecomposition(self.signals[i], self.wavelet).details)
         decomp = np.array(decomp)
         self.crossEWS = ews.CrossEWS(decomp, isSpectrum=False, order=self.order, wavelet=self.wavelet)
-        self.crossEWS.correctSpectrum()
+        # self.crossEWS.correctSpectrum()
         
     def smoothSpectrum(self, smoother:smo.Smoother):
         self.crossEWS.smoothSpectrum(smoother)

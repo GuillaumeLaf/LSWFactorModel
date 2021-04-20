@@ -300,12 +300,11 @@ class CrossEWS:
         None.
 
         """
-        
+        idx_i = np.concatenate(self.columnOrderIndexing)
         for u in range(self.spectrum.shape[0]):
             for v in range(self.spectrum.shape[0]):
                 temp_spectrum = np.zeros_like(self.spectrum[u, v])
-                idx_i = np.concatenate(self.columnOrderIndexing)
-                for i in self.columnOrderIndexing[0]:
+                for i in set(idx_i):
                     idx = np.arange(len(idx_i))[idx_i == i]
                     temp_spectrum[idx, :] = self.__correctSpectrumOfOrder(u, v, i, idx)
                 self.spectrum[u, v] = temp_spectrum
@@ -439,10 +438,10 @@ class CrossEWS:
         counter = 0
         for idx_scale, scale in enumerate(self.columnOrderIndexing):
             for order in scale:
-                if order >= 0:
-                    self.spectrum[u, v, counter] = decomp[u, idx_scale, :] * decomp[v, idx_scale + order, :]
-                else:
-                    self.spectrum[u, v, counter] = decomp[v, idx_scale, :] * decomp[u, idx_scale + order, :]
+                # if order >= 0:
+                self.spectrum[u, v, counter] = decomp[u, idx_scale, :] * decomp[v, idx_scale + order, :]
+                # else:
+                #     self.spectrum[u, v, counter] = decomp[v, idx_scale, :] * decomp[u, idx_scale + order, :]
                 counter += 1
 
     def __initializeSpectrumArrayIfNot(self):
