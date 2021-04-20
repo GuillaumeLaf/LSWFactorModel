@@ -44,7 +44,7 @@ class EWS:
         
     def setIncrementsCorrelationMatrix(self, correlationMatrix:np.ndarray):
         self.incrementsCorrelationMatrix = correlationMatrix
-        # self.__scaleSpectrumIfSimulation()
+        self.__scaleSpectrumIfSimulation()
     
     def graph(self, order:int=0, sharey:bool=True):
         n_scales = np.where(np.concatenate(self.columnOrderIndexing) == order, 1, 0).sum()
@@ -207,16 +207,16 @@ class EWS:
                  self.spectrum[counter, :] = decomp[idx_scale, :] * decomp[idx_scale + order, :]
                  counter += 1
             
-    # def __getIncrementsCorrelationScalingSpectrum(self):
-    #     scalingSpectrum = np.zeros_like(self.spectrum)
-    #     for z in range(self.spectrum.shape[1]):
-    #         scalingSpectrum[:,z] = utils.getScalingSpectrumAtTimeZ(self.incrementsCorrelationMatrix[:,:,z])[:, :self.spectrum.shape[1]]
-    #     return scalingSpectrum
+    def __getIncrementsCorrelationScalingSpectrum(self):
+        return np.array([[self.incrementsCorrelationMatrix[j, j+i, z] 
+                          for j, orders in enumerate(self.columnOrderIndexing) 
+                          for i in orders] 
+                         for z in range(self.decomposition.shape[1])]).T
     
-    # def __scaleSpectrumIfSimulation(self):
-    #     if self.__isSimulation():
-    #         scalingSpectrum = self.__getIncrementsCorrelationScalingSpectrum()
-    #         self.spectrum = np.multiply(self.spectrum, scalingSpectrum)       
+    def __scaleSpectrumIfSimulation(self):
+        if self.__isSimulation():
+            scalingSpectrum = self.__getIncrementsCorrelationScalingSpectrum()
+            self.spectrum = np.multiply(self.spectrum, scalingSpectrum)       
             
     def __initializeSpectrumArrayIfNot(self):
             if not utils.isArrayInitialized(self, 'spectrum'):
@@ -442,11 +442,7 @@ class CrossEWS:
                 if order >= 0:
                     self.spectrum[u, v, counter] = decomp[u, idx_scale, :] * decomp[v, idx_scale + order, :]
                 else:
-<<<<<<< HEAD
-                    self.spectrum[u, v, counter] = decomp[u, idx_scale, :] * decomp[v, idx_scale + order, :]
-=======
                     self.spectrum[u, v, counter] = decomp[v, idx_scale, :] * decomp[u, idx_scale + order, :]
->>>>>>> new_spectrum_order
                 counter += 1
 
     def __initializeSpectrumArrayIfNot(self):
