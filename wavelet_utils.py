@@ -121,13 +121,7 @@ def rollMatrixByRow(matrix:np.ndarray):
     
     for i in range(matrix.shape[0]):
         matrix[i, :] = np.roll(matrix[i, :], -i)
-    return matrix
-
-@nb.njit(nogil=True)
-def getScalingSpectrumAtTimeZ(scalingMatrix:np.ndarray):
-    scalingMatrix = np.triu(scalingMatrix)
-    scalingMatrix = rollMatrixByRow(scalingMatrix)
-    return scalingMatrix
+    return matrix    
 
 @nb.njit(nogil=True, fastmath=True)
 def initializeA_operatorOfOrders(crossCorrelationScaleI:np.ndarray, crossCorrelationScaleR:np.ndarray, maxScale:int):
