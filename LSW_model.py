@@ -177,7 +177,7 @@ class LSW:
             self.simulation += self.simulateScale(randomizedCoeffs[i, :], i)
         
     def graph(self):
-        fig, ax = plt.subplots(1,1,figsize=(17, 8))
+        fig, ax = plt.subplots(1,1,figsize=(24, 8))
         ax.plot(self.simulation)
 
     def __initializeSpectrum(self):

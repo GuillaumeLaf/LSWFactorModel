@@ -9,7 +9,7 @@ from tqdm import tqdm
 import cProfile as profile
 from timeit import timeit
 
-l = 1000
+l = 1024
 mS = int(np.floor(np.log(l)/np.log(2)))
 spect = np.zeros((mS, l), dtype=np.float64)
 spect[0][256:589] = 1.0
@@ -17,18 +17,18 @@ spect[0][768:] = (np.sin(2*np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[768:]
 spect[2][:256] = (np.sin(np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[:256]
 spect[3][284:] = (np.sin(5*np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[284:]
 # spect[3][:589] = (np.sin(5*np.pi*np.linspace(0,1,l) - np.pi/3)**2 + 0.5)[:589]
-spect[1][589:768] = (np.sin(5*np.pi*np.linspace(0,1,1024) - np.pi/4)**2 + 0.5)[589:768]
+spect[1]= (np.sin(5*np.pi*np.linspace(0,1,1024) - np.pi)**2 + 0.5)
 
 # spect[0][128:512] = 1.0
 # # spect[0][768:] = (np.sin(2*np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[768:]
 # spect[2][:400] = (np.sin(np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[:400]
 # spect[1][284:] = (np.sin(5*np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[284:]
 
-n = 250
+n = 1000
 order = 4
 
 lsw1 = lsw.LSW(spect, 'db1', order=order)
-incrCorrRows = lsw1.getConstantIncrementsCorrelationRows(np.array([1., 0.7, 0.4]))
+incrCorrRows = lsw1.getConstantIncrementsCorrelationRows(np.array([1., 0.7, 0.3]))
 lsw1.addIncrementsCorrelationMatrix(incrCorrRows)
 avg_simulation = np.zeros_like(lsw1.evol_spectrum.spectrum)
 # smoother = smo.Kernel_smoother('Gaussian', 75)

@@ -70,22 +70,32 @@ from timeit import timeit
 
 import pandas as pd
 
-data = pd.read_csv('crypto_daily.csv', delimiter=';', index_col=[0], parse_dates=True)
-data = data.loc[data.index.dropna()]
-data = data.iloc[:, :-1]
-# data = data + 1
-data = np.log1p(data.pct_change())
-data = np.cumsum(data)
+data = pd.read_csv('euribor_daily.csv', delimiter=';', index_col=[0], parse_dates=True)
+data.drop('date', inplace=True, axis=1)
+data.index = pd.to_datetime(data.index, unit='D', origin='1899-12-30')
+
+data = data - data.shift(1)
 data.dropna(inplace=True)
 
-# smoother = smo.Kernel_smoother('Gaussian', 250)
-smoother = smo.SWT_smoother(wav.Wavelet('db10', 6), 'soft')
+# data = data.loc[data.index.dropna()]
+data = data.iloc[::-1]
+# data = data.reset_index()
+# data.drop('index', inplace=True, axis=1)
+# data.to_csv('euribor_daily.csv')
+# # data = data + 1
+# data = np.log1p(data.pct_change())
+# data = data.pct_change()
+# data = np.cumsum(data)
 
-# np_data = np.flip(data.T.to_numpy(), axis=1)
 
-fm = fmodel.LSW_FactorModel(data.T.to_numpy(), 'db1', order=2, n_factors=1)
-fm.smoothSpectrum(smoother)
-fm.getLoadings()
+# smoother = smo.Kernel_smoother('Gaussian', 1000)
+# # smoother = smo.SWT_smoother(wav.Wavelet('db10', 6), 'soft')
+
+# # np_data = np.flip(data.T.to_numpy(), axis=1)
+
+# fm = fmodel.LSW_FactorModel(data.T.to_numpy(), 'db1', order=0, n_factors=1)
+# fm.smoothSpectrum(smoother)
+# fm.getLoadings()
 # fm.getCommonComp()
 
 

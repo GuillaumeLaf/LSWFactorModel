@@ -23,7 +23,8 @@ class LSW_FactorModel:
         self.order = order
         self.n_factors = n_factors
         
-        self.__computeMaxScale()
+        # self.__computeMaxScale()
+        self.maxScale = 5
         self.wavelet = wav.Wavelet(self.wavelet_name, self.maxScale)
         self.wavelet.discretizeToMaxScale()
         

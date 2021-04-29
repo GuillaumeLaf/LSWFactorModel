@@ -48,11 +48,19 @@ class EWS:
     
     def graph(self, order:int=0, sharey:bool=True):
         n_scales = np.where(np.concatenate(self.columnOrderIndexing) == order, 1, 0).sum()
-        fig, ax = plt.subplots(n_scales, 1, figsize=(12, 15), sharex=True, sharey=sharey)
+        fig, ax = plt.subplots(n_scales, 1, figsize=(12, 8), sharex=True, sharey=sharey)
         ax = np.ravel(ax)
         for j in range(n_scales):
             ax[j].plot(self.getSpectrumOfScaleAndOrder(j, order))
-            ax[j].set_ylabel(f'Scale -{j+1}')
+            ax[j].fill_between(np.arange(0,self.decomposition.shape[1]), self.getSpectrumOfScaleAndOrder(j, order))
+            ax[j].spines["top"].set_visible(False)
+            ax[j].spines["right"].set_visible(False)
+            ax[j].spines["left"].set_visible(False)
+            ax[j].set_facecolor("None")
+            ax[j].get_yaxis().set_visible(False)
+            # ax[j].set_ylabel(f'Scale -{j+1}')
+            # ax[j].tick_params(axis='y', labelrotation=-90)
+        # fig.savefig("plot_test", facecolor="None", edgecolor="b")
             
     def correctSpectrum(self):
         """
