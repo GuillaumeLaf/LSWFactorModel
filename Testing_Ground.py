@@ -24,7 +24,7 @@ spect[1]= (np.sin(5*np.pi*np.linspace(0,1,1024) - np.pi)**2 + 0.5)
 # spect[2][:400] = (np.sin(np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[:400]
 # spect[1][284:] = (np.sin(5*np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[284:]
 
-n = 1000
+n = 100
 order = 4
 
 lsw1 = lsw.LSW(spect, 'db1', order=order)

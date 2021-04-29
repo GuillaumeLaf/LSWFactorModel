@@ -98,6 +98,7 @@ class Wavelet:
 class CrossCorrelationWavelet(Wavelet):
     A_operator:np.ndarray
     columnOrderIndexing:np.ndarray  # This array allows us to easily know where the CCWF of scale 'j' and order 'i' is in the 'phi_operator' array
+    flatten_colOrderIdx:np.ndarray
     phi_operator:np.ndarray     # Array which stacks the CCWF vertically based on scale and order
     def __init__(self, name:str, maxScale:int, order:int):
         super().__init__(name, maxScale)
@@ -128,8 +129,8 @@ class CrossCorrelationWavelet(Wavelet):
 
         """
         
-        idx_i_mask = (np.concatenate(self.columnOrderIndexing) == i)
-        idx_r_mask = (np.concatenate(self.columnOrderIndexing) == r)
+        idx_i_mask = (self.flatten_colOrderIdx == i)
+        idx_r_mask = (self.flatten_colOrderIdx == r)
         
         operator_mask = np.outer(idx_i_mask, idx_r_mask)
         shape_i = self.maxScale - np.abs(i)
@@ -156,8 +157,12 @@ class CrossCorrelationWavelet(Wavelet):
         """
         
         self.initializePhi_operator()
+        self.flatten_colOrderIdx = np.concatenate(self.columnOrderIndexing)
+        # p = self.getRearrangingMatrix()
+        # self.phi_operator = self.phi_operator @ p
+        # self.flatten_colOrderIdx = self.flatten_colOrderIdx @ p
         self.A_operator = self.phi_operator.T @ self.phi_operator
-        # self.A_operator = np.linalg.inv(self.A_operator)
+        self.A_operator = np.linalg.inv(self.A_operator)
         
     
     def initializePhi_operator(self):
@@ -177,12 +182,13 @@ class CrossCorrelationWavelet(Wavelet):
         # See the docstring of the function '__stackCCWFatScale' to understand the importance of this list.
         col_order_j = []
         general_order_idx = []
-        general_idx = 0
+        general_idx = [0] # counter as a list since list are passed as reference to functions
         for j in range(self.maxScale):
             col_order_i = []
-            general_order_temp
-            self.__stackCCWFatScale(j, col_order_i)
+            general_order_temp = []
+            self.__stackCCWFatScale(j, col_order_i, general_order_temp, general_idx)
             col_order_j.append(np.array(col_order_i))
+            general_order_idx.append(np.array(general_order_temp))
             
         # Delete the first columns since it was only usefull to get the first stack
         self.phi_operator = np.delete(self.phi_operator, 0, axis=1)     
@@ -190,8 +196,9 @@ class CrossCorrelationWavelet(Wavelet):
         # Save the 'col_order_j' list permanently in the object.
         # However, it will later be modified when erasing some duplicate columns of the Gramian Matrix.
         self.columnOrderIndexing = np.array(col_order_j)
+        self.columnIdx = np.array(general_order_idx)
     
-    def __stackCCWFatScale(self, j:int, col_order:list):
+    def __stackCCWFatScale(self, j:int, col_order:list, general_order:list, counter:list):
         """
         Stack the Cross Correlation Wavelet Function of a particular scale 'j' vertically in an array 'phi_operator' for the order of the CCWF.
 
@@ -214,15 +221,36 @@ class CrossCorrelationWavelet(Wavelet):
         mx = np.min([self.maxScale-j, self.order+1])
         mn = np.max([-j, -self.order])
         for i in range(mn, mx):
-            if i >= 0:
-                col_order.append(i)
-                
-                # The sign of the order is importance since the CCWF are not symmetric. 
-                # The CCWF with a negative order is the mirror around the y-axis of the positive order (for a given scale 'j')
-                # Eventhough the 'negative is the mirror of the positive', the arrays are not mirror of each other.
-                self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j], self.discritization[j+i])))
+            # if i >= 0:
+            col_order.append(i)
+            general_order.append(counter[0])
+            counter[0] += 1
+            
+            # The sign of the order is importance since the CCWF are not symmetric. 
+            # The CCWF with a negative order is the mirror around the y-axis of the positive order (for a given scale 'j')
+            # Eventhough the 'negative is the mirror of the positive', the arrays are not mirror of each other.
+            self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j], self.discritization[j+i])))
+       
+    def getRearrangingMatrix(self):
+        rearranged_idx = self.getRearrangingIdx()
+        permu_matrix = np.zeros((len(rearranged_idx), len(rearranged_idx)), dtype=np.float64)
         
-    def get
+        for k in range(len(rearranged_idx)):
+            permu_matrix[int(rearranged_idx[k]), k] = 1.0
+        
+        return permu_matrix
+    
+    def getRearrangingIdx(self):
+        rearranged_idx = np.empty((len(self.flatten_colOrderIdx),), dtype=np.float64)
+        c = 0
+        for i in np.unique(self.flatten_colOrderIdx):
+            for j, idx_j in enumerate(self.columnOrderIndexing):
+                for k, idx_k in enumerate(idx_j):
+                    if idx_k == i:
+                        rearranged_idx[c] = self.columnIdx[j][k]
+                        c += 1
+        return rearranged_idx
+
 w = CrossCorrelationWavelet('db1', 3, 3)
 
 
