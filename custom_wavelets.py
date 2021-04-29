@@ -157,7 +157,7 @@ class CrossCorrelationWavelet(Wavelet):
         
         self.initializePhi_operator()
         self.A_operator = self.phi_operator.T @ self.phi_operator
-        self.A_operator = np.linalg.inv(self.A_operator)
+        # self.A_operator = np.linalg.inv(self.A_operator)
         
     
     def initializePhi_operator(self):
@@ -176,8 +176,11 @@ class CrossCorrelationWavelet(Wavelet):
         
         # See the docstring of the function '__stackCCWFatScale' to understand the importance of this list.
         col_order_j = []
+        general_order_idx = []
+        general_idx = 0
         for j in range(self.maxScale):
             col_order_i = []
+            general_order_temp
             self.__stackCCWFatScale(j, col_order_i)
             col_order_j.append(np.array(col_order_i))
             
@@ -219,7 +222,7 @@ class CrossCorrelationWavelet(Wavelet):
                 # Eventhough the 'negative is the mirror of the positive', the arrays are not mirror of each other.
                 self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j], self.discritization[j+i])))
         
-    
+    def get
 w = CrossCorrelationWavelet('db1', 3, 3)
 
 
