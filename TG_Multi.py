@@ -90,12 +90,12 @@ data = data.iloc[::-1]
 # data = np.cumsum(data)
 
 
-# smoother = smo.Kernel_smoother('Gaussian', 2000)
-smoother = smo.SWT_smoother(wav.Wavelet('db10', 8), 'soft')
+smoother = smo.Kernel_smoother('Gaussian', 2000)
+# smoother = smo.SWT_smoother(wav.Wavelet('db10', 8), 'soft')
 
 np_data = np.flip(data.T.to_numpy(), axis=0)*(-1)
 
-fm = fmodel.LSW_FactorModel(np_data, 'db1', order=0, n_factors=2, maxScale=0)
+fm = fmodel.LSW_FactorModel(np_data, 'db1', order=0, n_factors=48, maxScale=0)
 fm.smoothSpectrum(smoother)
 fm.getLoadings()
 fm.getCommonComponents()

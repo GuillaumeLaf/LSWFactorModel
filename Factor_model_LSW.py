@@ -92,7 +92,6 @@ class LSW_FactorModel:
         decomp = np.ravel(self.crossEWS.decomposition[:, :, z], order='F') 
         return (loadings.T @ decomp)/(self.n_signals*self.maxScale)
     
-    
     def getCommonCompInWaveletDomForSignalAndScale(self, u:int, i:int):
         idx = self.n_signals*i + u
         return (self.loadings[idx] * self.factors).sum(axis=0)
