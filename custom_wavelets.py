@@ -221,15 +221,15 @@ class CrossCorrelationWavelet(Wavelet):
         mx = np.min([self.maxScale-j, self.order+1])
         mn = np.max([-j, -self.order])
         for i in range(mn, mx):
-            # if i >= 0:
-            col_order.append(i)
-            general_order.append(counter[0])
-            counter[0] += 1
-            
-            # The sign of the order is importance since the CCWF are not symmetric. 
-            # The CCWF with a negative order is the mirror around the y-axis of the positive order (for a given scale 'j')
-            # Eventhough the 'negative is the mirror of the positive', the arrays are not mirror of each other.
-            self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j], self.discritization[j+i])))
+            if i >= 0:
+                col_order.append(i)
+                general_order.append(counter[0])
+                counter[0] += 1
+                
+                # The sign of the order is importance since the CCWF are not symmetric. 
+                # The CCWF with a negative order is the mirror around the y-axis of the positive order (for a given scale 'j')
+                # Eventhough the 'negative is the mirror of the positive', the arrays are not mirror of each other.
+                self.phi_operator = np.column_stack((self.phi_operator, utils.fft_ConjugateConvolve(self.discritization[j], self.discritization[j+i])))
        
     def getRearrangingMatrix(self):
         rearranged_idx = self.getRearrangingIdx()

@@ -99,7 +99,7 @@ class EWS:
             The corrected spectum of order "i".
 
         """
-
+        
         correctedSpectrum = np.zeros((len(idx), self.spectrum.shape[1]), dtype=np.float64)
         for r in np.unique(np.concatenate(self.columnOrderIndexing)):
             correctedSpectrum += (self.crossWavelet.getA_operatorAtOrder(i, r, trimmed=False) @ self.getSpectrumOfOrder(r))[:len(idx), :]
@@ -275,7 +275,7 @@ class CrossEWS:
         
     def graph(self, u:int, v:int, order:int=0, sharey:bool=True):
         n_scales = np.where(np.concatenate(self.columnOrderIndexing) == order, 1, 0).sum()
-        fig, ax = plt.subplots(n_scales, 1, figsize=(12, 15), sharex=True, sharey=True)
+        fig, ax = plt.subplots(n_scales, 1, figsize=(12, 15), sharex=True, sharey=sharey)
         ax = np.ravel(ax)
         for j in range(n_scales):
             ax[j].plot(self.getSpectrumOfScaleAndOrder(u, v, j, order))
