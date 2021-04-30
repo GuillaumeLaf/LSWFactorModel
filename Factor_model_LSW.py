@@ -92,26 +92,25 @@ class LSW_FactorModel:
         decomp = np.ravel(self.crossEWS.decomposition[:, :, z], order='F') 
         return (loadings.T @ decomp)/(self.n_signals*self.maxScale)
     
-    def getLoadingsForScaleAndElement(self, scale:int, element:int):
-        idx = scale*self.n_signals + element
-        return self.loadings[idx, :, :]     # out : (n_factors, length_signal)
     
-    def getCommonCompAtScaleAndElement(self, scale:int, element:int):
-        commonCompMatrix = self.getLoadingsForScaleAndElement(scale, element).T @ self.factors
-        return np.diag(commonCompMatrix)  # Only the diagonal element contains the common component.
+    def getCommonCompInWaveletDomForSignalAndScale(self, u:int, i:int):
+        idx = self.n_signals*i + u
+        return (self.loadings[idx] * self.factors).sum(axis=0)
     
-    def getCommonCompInTimeDomainForElement(self, element:int):
+    def getCommonCompInTimeDomForSignal(self, u:int):
+        out = np.zeros((self.length_signal,), dtype=np.float64)
         for j in range(self.maxScale):
-            discrete_wav = self.wavelet.discritization[j, :self.length_signal]
-            commonCompAtScale = self.getCommonCompAtScaleAndElement(j, element)
-            self.commonComp[element, :] += utils.fft_convolve(commonCompAtScale, discrete_wav)
-            
-    def getCommonComp(self):
+            discr_wav_j = self.wavelet.discritization[j]
+            # print(self.getCommonCompInWaveletDomForSignalAndScale(u, j).shape)
+            comp_wav_j = self.getCommonCompInWaveletDomForSignalAndScale(u, j)
+            out += utils.fft_convolve(comp_wav_j, discr_wav_j)
+        return out
+    
+    def getCommonComponents(self):
         self.__initializeCommonCompIfNot()
         for u in range(self.n_signals):
-            self.getCommonCompInTimeDomainForElement(u)
+            self.commonComp[u] = self.getCommonCompInTimeDomForSignal(u)
             
-        
     def __computeMaxScale(self):
         filterLength = len(np.array(pywt.Wavelet(self.wavelet_name).dec_lo))
         self.maxScale = int(np.floor(np.log(self.length_signal)/np.log(2)))

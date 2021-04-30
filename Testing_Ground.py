@@ -25,10 +25,10 @@ spect[1]= (np.sin(5*np.pi*np.linspace(0,1,1024) - np.pi)**2 + 0.5)
 # spect[1][284:] = (np.sin(5*np.pi*np.linspace(0,1,l) - np.pi/4)**2 + 0.5)[284:]
 
 n = 250
-order = 4
+order = 0
 
 lsw1 = lsw.LSW(spect, 'db1', order=order)
-incrCorrRows = lsw1.getConstantIncrementsCorrelationRows(np.array([1., 0.7, 0.3]))
+incrCorrRows = lsw1.getConstantIncrementsCorrelationRows(np.array([1.]))
 lsw1.addIncrementsCorrelationMatrix(incrCorrRows)
 avg_simulation = np.zeros_like(lsw1.evol_spectrum.spectrum)
 # smoother = smo.Kernel_smoother('Gaussian', 75)

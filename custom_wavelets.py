@@ -25,7 +25,7 @@ class Wavelet:
         self.name = name
         self.pywtWavelet = pywt.Wavelet(name)
         self.maxScale = maxScale
-        self.maxLength = self.getWaveletLength(self.maxScale + 1)    
+        self.maxLength = self.getWaveletLength(self.maxScale-1)    
         # Maximum wavelet length. Note that the maximum length is twice the actual maximum length of the coarsest wavelet scale (to make sure the convolution with fft works)
         
         # High and Low Decomposition and Reconstruction filters (used to decompose a signal with a particular wavelet)
@@ -251,7 +251,7 @@ class CrossCorrelationWavelet(Wavelet):
                         c += 1
         return rearranged_idx
 
-w = CrossCorrelationWavelet('db1', 3, 3)
+w = CrossCorrelationWavelet('db1', 12, 3)
 
 
 

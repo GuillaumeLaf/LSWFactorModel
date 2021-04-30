@@ -29,6 +29,7 @@ def fft_convolve(in1:np.ndarray, in2:np.ndarray):
     
     # This function allows to also convolve a filter 'in2' with an array 'in1'
     in2 = adjustSecondArraySizeToFirst(in1, in2)
+    in1 = adjustSecondArraySizeToFirst(in2, in1)
     
     in1_fft = np.fft.fft(in1)
     in2_fft = np.fft.fft(in2)
